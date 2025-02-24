@@ -14,7 +14,7 @@ app.config['SWAGGER'] = {
 
 swagger = Swagger(app)  
 
-model = None  # Global model variable
+model = None  
 
 # Preprocessing/ training LM model
 def preprocess_data():
