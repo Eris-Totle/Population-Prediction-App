@@ -40,8 +40,7 @@ def preprocess_data():
     except Exception as e:
         print(f"Error in preprocessing and training: {str(e)}")
         raise e
-
-# Generate summary statistics
+# summary
 def generate_summary(df):
     summary = {
         'total_entries': int(len(df)),
@@ -60,12 +59,12 @@ def generate_summary(df):
     }
     return summary
 
-# Home route
+# home
 @app.route('/')
 def home():
     return "Welcome to the Population Prediction API!"
 
-# Summary statistics route
+
 @app.route('/summary', methods=['GET'])
 def get_summary():
     '''
@@ -105,7 +104,6 @@ def get_summary():
               type: integer
     '''
     try:
-        # Load data and generate summary statistics
         df, _ = preprocess_data()
         summary = generate_summary(df)
         return jsonify(summary)
@@ -113,8 +111,7 @@ def get_summary():
         return jsonify({"error": f"ValueError: {str(e)}"}), 500
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
-
-# Prediction route
+# predict
 @app.route('/predict', methods=['POST'])
 def predict():
     '''
@@ -174,11 +171,9 @@ def predict():
         region = data.get('region')
         state = data.get('state')
 
-        # Check for missing or invalid parameters
         if None in [age, sex, origin, race, region, state]:
             return jsonify({"error": "Missing or invalid required parameters"}), 400
         
-        # Convert to appropriate types (ensure everything is numeric)
         try:
             age = int(age)
             sex = int(sex)
@@ -207,7 +202,7 @@ def predict():
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-# Reload data and retrain model route
+# reload
 @app.route('/reload', methods=['GET'])
 def reload_data():
     try:
@@ -217,7 +212,7 @@ def reload_data():
     except Exception as e:
         return jsonify({"error": f"Error during data reload: {str(e)}"}), 500
 
-# View data route
+# View data 
 @app.route('/view_data', methods=['GET'])
 def view_data():
     try:
