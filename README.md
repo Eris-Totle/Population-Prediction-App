@@ -19,3 +19,4 @@ The data source comes from within the [U.S. Census Bureau - Population Estimates
 The complete dataset can be downloaded [Here](https://www2.census.gov/programs-surveys/popest/technical-documentation/file-layouts/2020-2023/)
 
 ### Prediction Process
+The application uses a simple linear regression model to make population predictions. The input features are limited to 6 input features including race, sex, state, region, age, origin. 
