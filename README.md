@@ -29,3 +29,27 @@ Using this model allows users to get specific population estimates based on demo
 
 ## Pre-Requisites 
 ...
+
+## Setting Up on Mac/OS
+
+### 1). 
+
+### 2. Create a Virtual Environment
+
+### 3. Install the Dependencies
+
+### 4. Set Up Environment Variables
+
+### 5. Running the application
+
+### 6. Swagger Documentation
+
+### 7. Testing Endpoints
+
+### 8. Stopping the Application
+
+## Running Tests
+
+## Deploying to Heroku
+
+
