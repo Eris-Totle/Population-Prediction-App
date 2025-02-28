@@ -47,13 +47,13 @@ For MacOS:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-
+```
 For Windows:
 
 ```bash
 python -m venv venv
 venv\Scripts\activate
-
+```
 ### 3. Install the Dependencies
 
 ### 4. Set Up Environment Variables
