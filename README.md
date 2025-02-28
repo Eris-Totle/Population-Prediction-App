@@ -32,9 +32,27 @@ Using this model allows users to get specific population estimates based on demo
 
 ## Setting Up on Mac/OS
 
-### 1). 
+### 1. Create Text File
 
-### 2. Create a Virtual Environment
+Create a text file named app.py, ideally in a place easy to navigate to on your local machine. Use the code provided in the app.py provided here, modifying the script to include the CSV file for the data provided. 
+
+Once the file is saved, open your terminal to navigate to the directory of the project (i.e. cd /Users/Username/Documents/App_project)
+
+### 2. Create a Virtual Environment (Optional)
+
+Create a virtual environment prior to installing depenencies needed for this project: 
+
+For MacOS:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+
+For Windows:
+
+```bash
+python -m venv venv
+venv\Scripts\activate
 
 ### 3. Install the Dependencies
 
