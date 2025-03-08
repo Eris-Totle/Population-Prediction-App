@@ -1,3 +1,6 @@
+import folium
+from flask import render_template_string
+from folium.plugins import HeatMap
 from flask import Flask, request, jsonify
 from flasgger import Swagger  
 import pandas as pd
@@ -17,7 +20,6 @@ swagger = Swagger(app)
 
 model = None  
 
-# Preprocessing/ training LM model
 def preprocess_data():
     global model  
     try:
@@ -28,11 +30,12 @@ def preprocess_data():
 
         df = Population_df[['AGE', 'SEX', 'ORIGIN', 'RACE', 'REGION', 'STATE', 'POPESTIMATE2023']]
 
-        # Defining features for the model
+        
         X = df.drop(columns='POPESTIMATE2023')  # Independent variables
         y = df['POPESTIMATE2023']  # Dependent variable
 
-        # Training model
+
+        
         model = LinearRegression()
         model.fit(X, y)  # Fit the model
 
@@ -42,10 +45,9 @@ def preprocess_data():
         print(f"Error in preprocessing and training: {str(e)}")
         raise e
 
-# Load dataset globally
+
 df, model = preprocess_data()
 
-# home route
 @app.route('/')
 def home():
     """
@@ -57,7 +59,6 @@ def home():
     """
     return "Welcome to the Population Prediction API!"
 
-# 📌 **Summary Statistics Route**
 @app.route('/summary', methods=['GET'])
 def get_summary():
     """
@@ -78,39 +79,14 @@ def get_summary():
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
 
-@app.route('/choropleth', methods=['GET'])
-def get_choropleth():
+@app.route('/heatmap', methods=['GET'])
+def get_heatmap():
     """
-    Generate a choropleth map based on user-selected parameters (age, sex, origin, race).
-    ---
-    parameters:
-      - in: query
-        name: age
-        type: integer
-        description: Age filter (optional)
-      - in: query
-        name: sex
-        type: integer
-        enum: [0, 1, 2]  
-        description: Sex filter (optional)
-      - in: query
-        name: origin
-        type: integer
-        enum: [0, 1, 2]
-        description: Origin filter (optional)
-      - in: query
-        name: race
-        type: integer
-        enum: [1, 2, 3, 4, 5, 6]
-        description: Race filter (optional)
-    responses:
-      200:
-        description: Returns a choropleth map as JSON
+    Generate a Folium Heatmap based on user-selected parameters (age, sex, origin, race).
     """
     try:
         filtered_df = df.copy()
 
-        # Apply filters
         age = request.args.get('age', type=int)
         sex = request.args.get('sex', type=int)
         origin = request.args.get('origin', type=int)
@@ -125,54 +101,140 @@ def get_choropleth():
         if race is not None:
             filtered_df = filtered_df[filtered_df['RACE'] == race]
 
-     
         state_population = filtered_df.groupby('STATE', as_index=False)['POPESTIMATE2023'].sum()
+
+        if state_population.empty:
+            return jsonify({"error": "No data available for the selected filters."})
 
         state_population['POPESTIMATE2023'] = state_population['POPESTIMATE2023'].astype(int)
 
-        # Generate choropleth map
-        fig = go.Figure(data=go.Choropleth(
-            locations=state_population['STATE'],  
-            z=state_population['POPESTIMATE2023'],  
-            locationmode='USA-states',  
-            colorscale='Reds',  
-            colorbar_title="Population",  
-        ))
+        state_coords = {
+            'AL': [32.806671, -86.791130], 'AK': [61.370716, -152.404419], 'AZ': [33.729759, -111.431221],
+            'AR': [34.969704, -92.373123], 'CA': [36.116203, -119.681564], 'CO': [39.059811, -105.311104],
+            'CT': [41.597782, -72.755371], 'DE': [39.318523, -75.507141], 'FL': [27.766279, -81.686783],
+            'GA': [33.040619, -83.643074], 'HI': [21.094318, -157.498337], 'ID': [44.240459, -114.478828],
+            'IL': [40.349457, -88.986137], 'IN': [39.849426, -86.258278], 'IA': [42.011539, -93.210526],
+            'KS': [38.526600, -96.726486], 'KY': [37.668140, -84.670067], 'LA': [31.169546, -91.867805],
+            'ME': [44.693947, -69.381927], 'MD': [39.063946, -76.802101], 'MA': [42.230171, -71.530106],
+            'MI': [43.326618, -84.536095], 'MN': [45.694454, -93.900192], 'MS': [32.741646, -89.678696],
+            'MO': [38.456085, -92.288368], 'MT': [46.921925, -110.454353], 'NE': [41.125370, -98.268082],
+            'NV': [38.313515, -117.055374], 'NH': [43.452492, -71.563896], 'NJ': [40.298904, -74.521011],
+            'NM': [34.840515, -106.248482], 'NY': [42.165726, -74.948051], 'NC': [35.630066, -79.806419],
+            'ND': [47.528912, -99.784012], 'OH': [40.388783, -82.764915], 'OK': [35.565342, -96.928917],
+            'OR': [44.572021, -122.070938], 'PA': [40.590752, -77.209755], 'RI': [41.680893, -71.511780],
+            'SC': [33.856892, -80.945007], 'SD': [44.299782, -99.438828], 'TN': [35.747845, -86.692345],
+            'TX': [31.054487, -97.563461], 'UT': [40.150032, -111.862434], 'VT': [44.045876, -72.710686],
+            'VA': [37.769337, -78.169968], 'WA': [47.400902, -121.490494], 'WV': [38.491226, -80.954456],
+            'WI': [44.268543, -89.616508], 'WY': [42.755966, -107.302490]
+        }
 
-        fig.update_layout(
-            title_text='Filtered US Population Estimate (2023)',  
-            geo_scope='usa',  
+        us_map = folium.Map(location=[37.8, -96], zoom_start=5)
+
+        heat_data = [
+            [state_coords[state][0], state_coords[state][1], pop]
+            for state, pop in zip(state_population['STATE'], state_population['POPESTIMATE2023'])
+            if state in state_coords
+        ]
+
+        HeatMap(heat_data).add_to(us_map)
+
+        us_map.get_root().render()
+        return render_template_string(
+            """<!DOCTYPE html>
+                <html>
+                <head>{{ us_map.get_root().header.render()|safe }}</head>
+                <body>
+                    <h1>Population Heatmap (2023)</h1>
+                    {{ us_map.get_root().html.render()|safe }}
+                    <script>{{ us_map.get_root().script.render()|safe }}</script>
+                </body>
+                </html>""",
+            us_map=us_map
         )
-
-        # Return JSON with proper int conversion
-        graph_json = fig.to_json()
-        return jsonify({
-            "choropleth_map": graph_json,
-            "filtered_population_sum": int(state_population['POPESTIMATE2023'].sum())  # Convert int64 to int
-        })
 
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+    
+from flasgger import swag_from
+
+from flasgger import swag_from
 
 @app.route('/predict', methods=['POST'])
+@swag_from({
+    'parameters': [
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'age': {'type': 'integer', 'description': 'Age filter (optional)'},
+                    'sex': {'type': 'integer', 'enum': [0, 1, 2], 'description': 'Sex filter (optional)'},
+                    'origin': {'type': 'integer', 'enum': [0, 1, 2], 'description': 'Origin filter (optional)'},
+                    'race': {'type': 'integer', 'enum': [1, 2, 3, 4, 5, 6], 'description': 'Race filter (optional)'},
+                    'region': {'type': 'integer', 'description': 'Region filter (optional)'},
+                    'state': {'type': 'integer', 'description': 'State filter (optional)'}
+                }
+            }
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Predicted population estimate for 2023',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'predicted_population_estimate_2023': {
+                        'type': 'integer',
+                        'description': 'Predicted population estimate'
+                    }
+                }
+            }
+        },
+        400: {
+            'description': 'Bad Request - Invalid input or missing model'
+        },
+        415: {
+            'description': 'Unsupported Media Type - Ensure Content-Type is application/json'
+        }
+    }
+})
 def predict():
-    """
-    Predict the population estimate for 2023 based on input parameters.
-    """
     global model
     if model is None:
         return jsonify({"error": "Model not trained. Use '/reload'."}), 400
 
-    data = request.json
-    try:
-        input_data = np.array([data.get('age'), data.get('sex'), data.get('origin'),
-                               data.get('race'), data.get('region'), data.get('state')]).reshape(1, -1)
+    # Ensure the request is JSON
+    if not request.is_json:
+        return jsonify({"error": "Unsupported Media Type. Make sure to send JSON data with 'Content-Type: application/json'"}), 415
 
+    data = request.get_json()
+
+    try:
+        # Extract input features
+        age = data.get('age')
+        sex = data.get('sex')
+        origin = data.get('origin')
+        race = data.get('race')
+        region = data.get('region')
+        state = data.get('state')
+
+        # Validate inputs
+        if None in [age, sex, origin, race, region, state]:
+            return jsonify({"error": "Missing required input fields"}), 400
+
+        # Prepare data for prediction
+        input_data = np.array([age, sex, origin, race, region, state]).reshape(1, -1)
+
+        # Make prediction
         predicted_population = int(model.predict(input_data)[0])
 
         return jsonify({"predicted_population_estimate_2023": predicted_population})
+
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
 
 @app.route('/reload', methods=['GET'])
 def reload_data():
