@@ -3,7 +3,7 @@
  The API has four main endpoints
  * /predict Predicts the population given specified parameters.
  * /summary Summarizes statistical dimensions of the dataset.
- * /cholopleth (In Progress - Density Map being added) - A heatmap displaying population across states by selectable parameters (i.e. race, sex, gender)
+ * /heatmap (In Progress - Density Map being added) - A heatmap displaying population across states by selectable parameters (i.e. race, sex, gender)
 
 ## Data Source and Prediction Process
 The data source comes from within the [U.S. Census Bureau - Population Estimates Data](https://www.census.gov/programs-surveys/popest/data/data-sets.html). This data contains population estimates for 6 race groups by sex, age, and hispanic origin. Use the data summary [DATA_key](https://www2.census.gov/programs-surveys/popest/technical-documentation/file-layouts/2020-2023/SC-EST2023-ALLDATA6.pdf?utm_source=chatgpt.com) to understand the paramaters/ keys corresponding to numerical values in columns. The data includes features including: SUMLEV, REGION, DIVISION, STATE, NAME, SEX, ORIGIN, RACE, AGE.
@@ -18,6 +18,9 @@ The application allows the user to choose between prediction models (i.e.....) .
 3) **Prediction** The model then makes predictions based on the input features/ parameters input by the user.
 
 Using this model allows users to get specific population estimates based on demographic and regional features of interest. 
+
+### Heatmap
+The application includes a folium heapmap with inline html rendering to produce a heatmap of populations per selected parameters of a users interest...
 
 ## Pre-Requisites 
 ...
