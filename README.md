@@ -21,6 +21,7 @@ Using this model allows users to get specific population estimates based on demo
 
 ### Heatmap
 The application includes a folium heapmap with inline html rendering to produce a heatmap of populations per selected parameters of a users interest...
+<img width="1166" alt="Screenshot 2025-03-08 at 7 18 20 PM" src="https://github.com/user-attachments/assets/3e45da27-7d29-490e-9206-4bb8d90d7360" />
 
 ## Pre-Requisites 
 ...
