@@ -6,6 +6,7 @@ from flasgger import Swagger
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import branca
 from sklearn.linear_model import LinearRegression
 
 app = Flask(__name__)
@@ -148,6 +149,38 @@ def get_heatmap():
         ]
 
         HeatMap(heat_data).add_to(us_map)
+
+          # code for legend/ scale
+        min_pop = state_population['POPESTIMATE2023'].min()
+        max_pop = state_population['POPESTIMATE2023'].max()
+
+        if min_pop == max_pop:
+            min_pop = 0  
+
+        colormap = branca.colormap.LinearColormap(
+            colors=['blue', 'green', 'yellow', 'red'],  
+            vmin=min_pop, vmax=max_pop
+        )
+        colormap.caption = "Population Intensity (2023)"
+        colormap.add_to(us_map)
+         
+         # code for tooltip
+        for _, row in state_population.iterrows():
+            state = row['STATE_ABBR']
+            pop = row['POPESTIMATE2023']
+            if state in state_coords:
+              folium.CircleMarker(
+                  location=state_coords[state],
+                  radius=10,  
+                  color="transparent",  
+                  fill=True,
+                  fill_color="transparent",  
+                  fill_opacity=0,  
+                  opacity=0,  
+                  tooltip=f"<b>{state}</b>: {pop:,} people"  
+              ).add_to(us_map)
+
+        
 
         us_map.get_root().render()
         return render_template_string(
