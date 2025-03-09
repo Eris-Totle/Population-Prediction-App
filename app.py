@@ -92,17 +92,15 @@ def get_summary():
 
 @app.route('/heatmap', methods=['GET'])
 def get_heatmap():
-    """
-    Generate a Folium Heatmap based on user-selected parameters (age, sex, origin, race).
-    """
-    try:
-        filtered_df = df.copy()
+    """ Generate a Folium Heatmap based on user-selected parameters (age, sex, origin, race). """
 
+    try:
         age = request.args.get('age', type=int)
         sex = request.args.get('sex', type=int)
         origin = request.args.get('origin', type=int)
         race = request.args.get('race', type=int)
 
+        filtered_df = df.copy()
         if age is not None:
             filtered_df = filtered_df[filtered_df['AGE'] == age]
         if sex is not None:
@@ -112,13 +110,11 @@ def get_heatmap():
         if race is not None:
             filtered_df = filtered_df[filtered_df['RACE'] == race]
 
+        
         state_population = filtered_df.groupby('STATE_ABBR', as_index=False)['POPESTIMATE2023'].sum()
-
 
         if state_population.empty:
             return jsonify({"error": "No data available for the selected filters."})
-
-        state_population['POPESTIMATE2023'] = state_population['POPESTIMATE2023'].astype(int)
 
         state_coords = {
             'AL': [32.806671, -86.791130], 'AK': [61.370716, -152.404419], 'AZ': [33.729759, -111.431221],
@@ -142,29 +138,17 @@ def get_heatmap():
 
         us_map = folium.Map(location=[37.8, -96], zoom_start=5)
 
-        heat_data = [
-            [state_coords[state][0], state_coords[state][1], pop]
-            for state, pop in zip(state_population['STATE_ABBR'], state_population['POPESTIMATE2023'])
-            if state in state_coords
-        ]
+        heat_data = [[state_coords[state][0], state_coords[state][1], pop]
+                     for state, pop in zip(state_population['STATE_ABBR'], state_population['POPESTIMATE2023'])
+                     if state in state_coords]
+        HeatMap(heat_data, radius=25, blur=15, max_zoom=1).add_to(us_map)
 
-        HeatMap(heat_data).add_to(us_map)
-
-          # code for legend/ scale
-        min_pop = state_population['POPESTIMATE2023'].min()
-        max_pop = state_population['POPESTIMATE2023'].max()
-
-        if min_pop == max_pop:
-            min_pop = 0  
-
-        colormap = branca.colormap.LinearColormap(
-            colors=['blue', 'green', 'yellow', 'red'],  
-            vmin=min_pop, vmax=max_pop
-        )
+        colormap = branca.colormap.LinearColormap(colors=['blue', 'green', 'yellow', 'red'],
+                                                  vmin=state_population['POPESTIMATE2023'].min(),
+                                                  vmax=state_population['POPESTIMATE2023'].max())
         colormap.caption = "Population Intensity (2023)"
         colormap.add_to(us_map)
-         
-         # code for tooltip
+
         for _, row in state_population.iterrows():
             state = row['STATE_ABBR']
             pop = row['POPESTIMATE2023']
@@ -180,21 +164,24 @@ def get_heatmap():
                   tooltip=f"<b>{state}</b>: {pop:,} people"  
               ).add_to(us_map)
 
-        
-
         us_map.get_root().render()
-        return render_template_string(
-            """<!DOCTYPE html>
-                <html>
-                <head>{{ us_map.get_root().header.render()|safe }}</head>
-                <body>
-                    <h1>Population Heatmap (2023)</h1>
-                    {{ us_map.get_root().html.render()|safe }}
-                    <script>{{ us_map.get_root().script.render()|safe }}</script>
-                </body>
-                </html>""",
-            us_map=us_map
-        )
+        return render_template_string("""
+        <!DOCTYPE html>
+        <html>
+        <head>{{ us_map.get_root().header.render()|safe }}</head>
+        <body>
+            <h1>Population Heatmap (2023)</h1>
+            <form method="GET" action="/heatmap">
+                Age: <input type="number" name="age">
+                Sex: <input type="number" name="sex">
+                Origin: <input type="number" name="origin">
+                Race: <input type="number" name="race">
+                <button type="submit">Filter</button>
+            </form>
+            {{ us_map.get_root().html.render()|safe }}
+            <script>{{ us_map.get_root().script.render()|safe }}</script>
+        </body>
+        </html>""", us_map=us_map)
 
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
