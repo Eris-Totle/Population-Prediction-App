@@ -23,7 +23,7 @@ Using this model allows users to get specific population estimates based on demo
 The application includes a folium heapmap with inline html rendering to produce a heatmap of populations per selected parameters of a users interest. This resource was helpful for developing this map type with inline html rendering [Mapping Guide](https://python-visualization.github.io/folium/latest/advanced_guide/flask.html)
 
 #### Sample Visual
-<img width="1184" alt="Screenshot 2025-03-09 at 1 40 47 PM" src="https://github.com/user-attachments/assets/c647eec3-47e0-4bcf-9c9c-887844b14bb6" />
+<img width="1184" alt="Screenshot 2025-03-09 at 2 54 39 PM" src="https://github.com/user-attachments/assets/c4ce1cca-f010-45a5-b228-65fdfeda8511" />
 
 ## Pre-Requisites 
 ...
