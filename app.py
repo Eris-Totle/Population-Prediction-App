@@ -28,16 +28,26 @@ def preprocess_data():
         if Population_df.empty:
             raise ValueError("CSV data is empty.")
 
-        df = Population_df[['AGE', 'SEX', 'ORIGIN', 'RACE', 'REGION', 'STATE', 'POPESTIMATE2023']]
+        state_mapping = {
+            '1': 'AL', '2': 'AK', '4': 'AZ', '5': 'AR', '6': 'CA', '8': 'CO', '9': 'CT', '10': 'DE', '12': 'FL',
+            '13': 'GA', '15': 'HI', '16': 'ID', '17': 'IL', '18': 'IN', '19': 'IA', '20': 'KS', '21': 'KY',
+            '22': 'LA', '23': 'ME', '24': 'MD', '25': 'MA', '26': 'MI', '27': 'MN', '28': 'MS', '29': 'MO',
+            '30': 'MT', '31': 'NE', '32': 'NV', '33': 'NH', '34': 'NJ', '35': 'NM', '36': 'NY', '37': 'NC',
+            '38': 'ND', '39': 'OH', '40': 'OK', '41': 'OR', '42': 'PA', '44': 'RI', '45': 'SC', '46': 'SD',
+            '47': 'TN', '48': 'TX', '49': 'UT', '50': 'VT', '51': 'VA', '53': 'WA', '54': 'WV', '55': 'WI',
+            '56': 'WY'
+        }
+        Population_df['STATE_ABBR'] = Population_df['STATE'].map(state_mapping)
+        df = Population_df[['AGE', 'SEX', 'ORIGIN', 'RACE', 'REGION', 'STATE', 'STATE_ABBR', 'POPESTIMATE2023']]
 
         
-        X = df.drop(columns='POPESTIMATE2023')  # Independent variables
-        y = df['POPESTIMATE2023']  # Dependent variable
+        X = df.drop(columns=['POPESTIMATE2023', 'STATE_ABBR'])  
+        y = df['POPESTIMATE2023']  
 
 
         
         model = LinearRegression()
-        model.fit(X, y)  # Fit the model
+        model.fit(X, y)  
 
         return df, model  
 
@@ -101,7 +111,8 @@ def get_heatmap():
         if race is not None:
             filtered_df = filtered_df[filtered_df['RACE'] == race]
 
-        state_population = filtered_df.groupby('STATE', as_index=False)['POPESTIMATE2023'].sum()
+        state_population = filtered_df.groupby('STATE_ABBR', as_index=False)['POPESTIMATE2023'].sum()
+
 
         if state_population.empty:
             return jsonify({"error": "No data available for the selected filters."})
@@ -132,7 +143,7 @@ def get_heatmap():
 
         heat_data = [
             [state_coords[state][0], state_coords[state][1], pop]
-            for state, pop in zip(state_population['STATE'], state_population['POPESTIMATE2023'])
+            for state, pop in zip(state_population['STATE_ABBR'], state_population['POPESTIMATE2023'])
             if state in state_coords
         ]
 
@@ -205,14 +216,14 @@ def predict():
     if model is None:
         return jsonify({"error": "Model not trained. Use '/reload'."}), 400
 
-    # Ensure the request is JSON
+
     if not request.is_json:
         return jsonify({"error": "Unsupported Media Type. Make sure to send JSON data with 'Content-Type: application/json'"}), 415
 
     data = request.get_json()
 
     try:
-        # Extract input features
+      
         age = data.get('age')
         sex = data.get('sex')
         origin = data.get('origin')
@@ -220,14 +231,14 @@ def predict():
         region = data.get('region')
         state = data.get('state')
 
-        # Validate inputs
+       
         if None in [age, sex, origin, race, region, state]:
             return jsonify({"error": "Missing required input fields"}), 400
 
-        # Prepare data for prediction
+      
         input_data = np.array([age, sex, origin, race, region, state]).reshape(1, -1)
 
-        # Make prediction
+   
         predicted_population = int(model.predict(input_data)[0])
 
         return jsonify({"predicted_population_estimate_2023": predicted_population})
