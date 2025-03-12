@@ -20,7 +20,7 @@ The application allows the user to choose between prediction models (i.e.....) .
 Using this model allows users to get specific population estimates based on demographic and regional features of interest. 
 
 ### Heatmap
-The application includes a folium heapmap with inline html rendering to produce a heatmap of populations per selected parameters of a users interest. This resource was helpful for developing this map type with inline html rendering [Mapping Guide](https://python-visualization.github.io/folium/latest/advanced_guide/flask.html)
+The application includes a folium heapmap with inline html rendering to produce a heatmap of populations per selected parameters of a users interest. This resource was helpful for developing this map type with inline html rendering [Mapping Guide](https://python-visualization.github.io/folium/latest/advanced_guide/flask.html). While the same could probably be achieved through sending the data to Power BI, it was neat to see how parameters/ features of the resulting map could be customized using flask/ folium libraries.
 
 #### Sample Visual
 <img width="1190" alt="Screenshot 2025-03-11 at 9 35 10 PM" src="https://github.com/user-attachments/assets/6c65706d-3e1c-4945-bc26-f23b8b1de8b8" />
