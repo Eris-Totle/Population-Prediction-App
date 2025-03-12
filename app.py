@@ -95,6 +95,18 @@ def get_heatmap():
     """ Generate a Folium Heatmap based on user-selected parameters (age, sex, origin, race). """
 
     try:
+        age_options = sorted(df['AGE'].unique().tolist())
+        sex_options = {0: "Total", 1: "Male", 2: "Female"}
+        origin_options = {0: "Total", 1: "Non-Hispanic", 2: "Hispanic"}
+        race_options = {
+            1: "White alone",
+            2: "Black or African American alone",
+            3: "American Indian and Alaska Native alone",
+            4: "Asian alone",
+            5: "Native Hawaiian and Other Pacific Islander alone",
+            6: "Two or More Races"
+        }
+
         age = request.args.get('age', type=int)
         sex = request.args.get('sex', type=int)
         origin = request.args.get('origin', type=int)
@@ -110,7 +122,6 @@ def get_heatmap():
         if race is not None:
             filtered_df = filtered_df[filtered_df['RACE'] == race]
 
-        
         state_population = filtered_df.groupby('STATE_ABBR', as_index=False)['POPESTIMATE2023'].sum()
 
         if state_population.empty:
@@ -138,33 +149,37 @@ def get_heatmap():
 
         us_map = folium.Map(location=[37.8, -96], zoom_start=5)
 
+     
         heat_data = [[state_coords[state][0], state_coords[state][1], pop]
                      for state, pop in zip(state_population['STATE_ABBR'], state_population['POPESTIMATE2023'])
                      if state in state_coords]
         HeatMap(heat_data, radius=25, blur=15, max_zoom=1).add_to(us_map)
 
+        # adding legend
         colormap = branca.colormap.LinearColormap(colors=['blue', 'green', 'yellow', 'red'],
                                                   vmin=state_population['POPESTIMATE2023'].min(),
                                                   vmax=state_population['POPESTIMATE2023'].max())
         colormap.caption = "Population Intensity (2023)"
         colormap.add_to(us_map)
 
+        # AAddin tooltips
         for _, row in state_population.iterrows():
             state = row['STATE_ABBR']
             pop = row['POPESTIMATE2023']
             if state in state_coords:
-              folium.CircleMarker(
-                  location=state_coords[state],
-                  radius=10,  
-                  color="transparent",  
-                  fill=True,
-                  fill_color="transparent",  
-                  fill_opacity=0,  
-                  opacity=0,  
-                  tooltip=f"<b>{state}</b>: {pop:,} people"  
-              ).add_to(us_map)
+                folium.CircleMarker(
+                    location=state_coords[state],
+                    radius=10,  
+                    color="transparent",  
+                    fill=True,
+                    fill_color="transparent",  
+                    fill_opacity=0,  
+                    opacity=0,  
+                    tooltip=f"<b>{state}</b>: {pop:,} people"
+                ).add_to(us_map)
 
         us_map.get_root().render()
+
         return render_template_string("""
         <!DOCTYPE html>
         <html>
@@ -172,21 +187,47 @@ def get_heatmap():
         <body>
             <h1>Population Heatmap (2023)</h1>
             <form method="GET" action="/heatmap">
-                Age: <input type="number" name="age">
-                Sex: <input type="number" name="sex">
-                Origin: <input type="number" name="origin">
-                Race: <input type="number" name="race">
+                <label for="age">Age:</label>
+                <select name="age">
+                    <option value="">All</option>
+                    {% for a in age_options %}
+                        <option value="{{ a }}">{{ a }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="sex">Sex:</label>
+                <select name="sex">
+                    <option value="">All</option>
+                    {% for key, value in sex_options.items() %}
+                        <option value="{{ key }}">{{ value }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="origin">Origin:</label>
+                <select name="origin">
+                    <option value="">All</option>
+                    {% for key, value in origin_options.items() %}
+                        <option value="{{ key }}">{{ value }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="race">Race:</label>
+                <select name="race">
+                    <option value="">All</option>
+                    {% for key, value in race_options.items() %}
+                        <option value="{{ key }}">{{ value }}</option>
+                    {% endfor %}
+                </select>
+
                 <button type="submit">Filter</button>
             </form>
             {{ us_map.get_root().html.render()|safe }}
             <script>{{ us_map.get_root().script.render()|safe }}</script>
         </body>
-        </html>""", us_map=us_map)
+        </html>""", us_map=us_map, age_options=age_options, sex_options=sex_options, origin_options=origin_options, race_options=race_options)
 
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
-    
-from flasgger import swag_from
 
 from flasgger import swag_from
 
