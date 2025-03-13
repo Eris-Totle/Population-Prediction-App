@@ -232,51 +232,44 @@ def get_heatmap():
 from flasgger import swag_from
 
 @app.route('/predict', methods=['POST'])
-@swag_from({
-    'parameters': [
-        {
-            'name': 'body',
-            'in': 'body',
-            'required': True,
-            'schema': {
-                'type': 'object',
-                'properties': {
-                    'age': {'type': 'integer', 'description': 'Age filter (optional)'},
-                    'sex': {'type': 'integer', 'enum': [0, 1, 2], 'description': 'Sex filter (optional)'},
-                    'origin': {'type': 'integer', 'enum': [0, 1, 2], 'description': 'Origin filter (optional)'},
-                    'race': {'type': 'integer', 'enum': [1, 2, 3, 4, 5, 6], 'description': 'Race filter (optional)'},
-                    'region': {'type': 'integer', 'description': 'Region filter (optional)'},
-                    'state': {'type': 'integer', 'description': 'State filter (optional)'}
-                }
-            }
-        }
-    ],
-    'responses': {
-        200: {
-            'description': 'Predicted population estimate for 2023',
-            'schema': {
-                'type': 'object',
-                'properties': {
-                    'predicted_population_estimate_2023': {
-                        'type': 'integer',
-                        'description': 'Predicted population estimate'
-                    }
-                }
-            }
-        },
-        400: {
-            'description': 'Bad Request - Invalid input or missing model'
-        },
-        415: {
-            'description': 'Unsupported Media Type - Ensure Content-Type is application/json'
-        }
-    }
-})
 def predict():
+    """
+    Predict the population estimate based on input parameters.
+    ---
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            age:
+              type: integer
+              description: Age of the individual
+              minimum: 0
+              maximum: 99
+            sex:
+              type: integer
+              enum: [0, 1, 2]
+              description: Sex filter (0 = Total, 1 = Male, 2 = Female)
+            origin:
+              type: integer
+              enum: [0, 1, 2]
+              description: Origin filter (0 = Total, 1 = Non-Hispanic, 2 = Hispanic)
+            race:
+              type: integer
+              enum: [1, 2, 3, 4, 5, 6]
+              description: Race filter
+            state:
+              type: integer
+              description: State
+    responses:
+      200:
+        description: Predicted Population
+    """
     global model
     if model is None:
         return jsonify({"error": "Model not trained. Use '/reload'."}), 400
-
 
     if not request.is_json:
         return jsonify({"error": "Unsupported Media Type. Make sure to send JSON data with 'Content-Type: application/json'"}), 415
@@ -284,28 +277,39 @@ def predict():
     data = request.get_json()
 
     try:
-      
         age = data.get('age')
         sex = data.get('sex')
         origin = data.get('origin')
         race = data.get('race')
-        region = data.get('region')
         state = data.get('state')
 
-       
-        if None in [age, sex, origin, race, region, state]:
+        if None in [age, sex, origin, race, state]:
             return jsonify({"error": "Missing required input fields"}), 400
 
-      
-        input_data = np.array([age, sex, origin, race, region, state]).reshape(1, -1)
+        input_data = np.array([[age, sex, origin, race]])  # State is categorical, not included in model features
 
-   
-        predicted_population = int(model.predict(input_data)[0])
+        predicted_population = int(model.predict(input_data)[0])  # Simulated prediction
 
         return jsonify({"predicted_population_estimate_2023": predicted_population})
 
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+    
+@app.route('/reload', methods=['GET'])
+def reload_data():
+    """
+    Reload the dataset and retrain the model.
+    ---
+    responses:
+      200:
+        description: Data reloaded successfully
+    """
+    try:
+        global df, model  
+        df, model = preprocess_data() 
+        return jsonify({"message": "Data reloaded and model retrained successfully"})
+    except Exception as e:
+        return jsonify({"error": f"Error during data reload: {str(e)}"}), 500
 
 
 @app.route('/reload', methods=['GET'])
