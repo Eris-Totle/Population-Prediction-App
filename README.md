@@ -60,18 +60,69 @@ python -m venv venv
 venv\Scripts\activate
 ```
 ### 3. Install the Dependencies
+Intall dependencies for this project using pip
 
-### 4. Set Up Environment Variables
+```bash
+pip install -r requirements.txt
+```
+### 4. Environmental Variables
+Prior to running the app, you'll need to creat a .env file in the project root. Add the following:
 
+```bash
+FLASK_APP=app.py
+FLASK_ENV=development
+```
+Setting up environmental variables in OS:
+```bash
+export FLASK_APP=app.py
+export FLASK_ENV=development
+```
+
+In Windows powershell
+
+```bash
+export FLASK_APP=app.py
+export FLASK_ENV=development
+```
 ### 5. Running the application
 
+When you're ready to run the app
+```bash
+flask run
+```
 ### 6. Swagger Documentation
 
+The Swagger documentation and some feature of the app will be available at
+
+```bash
+http://127.0.0.1:5000/apidocs/
+```
 ### 7. Testing Endpoints
 
-### 8. Stopping the Application
+Reloading the data/ training the model can be done through the /reload endpoint
+```bash
+curl -X POST http://127.0.0.1:5000/reload
+```
 
-## Running Tests
+Predicting data can be done through inputting parameters (use the data key for guidance here)
+
+```bash
+curl -X POST http://127.0.0.1:5000/predict \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "age": 16,
+  "origin": 1,
+  "race": 1,
+  "region": 1,
+  "sex": 1,
+  "state": 17
+}'
+
+### 8. Stopping the Application
+To shop the application - Ctrl + C
+
+## Running Tests - In progress
+Pytests 
 
 ## Deploying to Heroku
 
