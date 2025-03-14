@@ -228,6 +228,9 @@ def get_heatmap():
 
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+    
+
+from flasgger import swag_from
 
 from flasgger import swag_from
 
@@ -247,7 +250,7 @@ def predict():
               type: integer
               description: Age of the individual
               minimum: 0
-              maximum: 99
+              maximum: 85
             sex:
               type: integer
               enum: [0, 1, 2]
@@ -263,6 +266,11 @@ def predict():
             state:
               type: integer
               description: State
+              minimum : 1
+              maximum: 56
+            region:
+                type: integer
+                enum: [1, 2, 3, 4, 5, 6]
     responses:
       200:
         description: Predicted Population
@@ -282,36 +290,24 @@ def predict():
         origin = data.get('origin')
         race = data.get('race')
         state = data.get('state')
+        region = data.get('region')
 
-        if None in [age, sex, origin, race, state]:
+        if None in [age, sex, origin, race, state, region]:
             return jsonify({"error": "Missing required input fields"}), 400
 
-        input_data = np.array([[age, sex, origin, race]])  # State is categorical, not included in model features
+        # Create a DataFrame with the same column names as the training data
+        input_data = pd.DataFrame([[age, sex, origin, race, region, state]], 
+                                  columns=['AGE', 'SEX', 'ORIGIN', 'RACE', 'REGION', 'STATE'])
 
+        # Predict using the trained model
         predicted_population = int(model.predict(input_data)[0])  # Simulated prediction
 
         return jsonify({"predicted_population_estimate_2023": predicted_population})
 
     except Exception as e:
         return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+
     
-@app.route('/reload', methods=['GET'])
-def reload_data():
-    """
-    Reload the dataset and retrain the model.
-    ---
-    responses:
-      200:
-        description: Data reloaded successfully
-    """
-    try:
-        global df, model  
-        df, model = preprocess_data() 
-        return jsonify({"message": "Data reloaded and model retrained successfully"})
-    except Exception as e:
-        return jsonify({"error": f"Error during data reload: {str(e)}"}), 500
-
-
 @app.route('/reload', methods=['GET'])
 def reload_data():
     """
@@ -342,6 +338,6 @@ def view_data():
         return jsonify(data)
     except Exception as e:
         return jsonify({"error": f"Error fetching data: {str(e)}"}), 500
-
+    
 if __name__ == '__main__':
     app.run(debug=True)
