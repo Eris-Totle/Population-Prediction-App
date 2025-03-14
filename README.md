@@ -117,7 +117,7 @@ curl -X POST http://127.0.0.1:5000/predict \
   "sex": 1,
   "state": 17
 }'
-
+```
 ### 8. Stopping the Application
 To shop the application - Ctrl + C
 
