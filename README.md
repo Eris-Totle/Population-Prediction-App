@@ -73,6 +73,7 @@ FLASK_APP=app.py
 FLASK_ENV=development
 ```
 Setting up environmental variables in OS:
+
 ```bash
 export FLASK_APP=app.py
 export FLASK_ENV=development
@@ -87,6 +88,7 @@ export FLASK_ENV=development
 ### 5. Running the application
 
 When you're ready to run the app
+
 ```bash
 flask run
 ```
@@ -125,5 +127,52 @@ To shop the application - Ctrl + C
 Pytests 
 
 ## Deploying to Heroku
+
+### Install Heroku
+The app is compatible with heroku, which can be installed via homebrew.
+
+For Mac OS
+
+```bash
+brew tap heroku/brew && brew install heroku
+```
+Windows
+
+Downloiad Heroku installer from https://devcenter.heroku.com/articles/heroku-cli
+
+### Verify installation
+Once you've installed Heroku, you can verify it's installation with:
+
+```bash
+heroku --version
+```
+
+### Log In
+Use your terminal to log into Heroku
+
+```bash
+heroku login
+```
+This will prompt a web based log in.
+
+### Prepare for Deployment
+Make sure your requirements.txt and Procfile are in the project root. 
+
+* **procfile:** Create a procfile in the root
+```bash
+web: flask run --host=0.0.0.0 --port=$PORT
+```
+
+### Create Heroku App
+
+This command will create the app:
+
+```bash
+heroku create
+```
+
+### Deploy to Heroku
+
+Deploy the app to Git
 
 
