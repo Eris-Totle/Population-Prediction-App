@@ -173,6 +173,30 @@ heroku create
 
 ### Deploy to Heroku
 
-Deploy the app to Git
+Deploy the app using Git:
+
+```bash
+git add .
+git commit -m "Initial commit"
+git push heroku main
+```
+
+### Scale the app
+
+Scale the app to run one web dyno:
+
+```bash
+heroku ps:scale web=1
+```
+
+### Open App
+
+Open app with:
+
+```bash
+heroku open
+```
+
+Happy Predicting!!!
 
 
