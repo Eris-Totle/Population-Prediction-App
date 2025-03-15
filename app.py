@@ -295,12 +295,10 @@ def predict():
         if None in [age, sex, origin, race, state, region]:
             return jsonify({"error": "Missing required input fields"}), 400
 
-        # Create a DataFrame with the same column names as the training data
         input_data = pd.DataFrame([[age, sex, origin, race, region, state]], 
                                   columns=['AGE', 'SEX', 'ORIGIN', 'RACE', 'REGION', 'STATE'])
 
-        # Predict using the trained model
-        predicted_population = int(model.predict(input_data)[0])  # Simulated prediction
+        predicted_population = int(model.predict(input_data)[0])  
 
         return jsonify({"predicted_population_estimate_2023": predicted_population})
 
