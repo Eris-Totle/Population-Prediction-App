@@ -4,6 +4,7 @@
  * /predict Predicts the population given specified parameters.
  * /summary Summarizes statistical dimensions of the dataset.
  * /heatmap A heatmap displaying population across states by selectable parameters (i.e. race, sex, gender)
+ * /reload Reloads the data and trains the model
 
 ## Data Source and Prediction Process
 The data source comes from within the [U.S. Census Bureau - Population Estimates Data](https://www.census.gov/programs-surveys/popest/data/data-sets.html). This data contains population estimates for 6 race groups by sex, age, and hispanic origin. Use the data summary [DATA_key](https://www2.census.gov/programs-surveys/popest/technical-documentation/file-layouts/2020-2023/SC-EST2023-ALLDATA6.pdf?utm_source=chatgpt.com) to understand the paramaters/ keys corresponding to numerical values in columns. The data includes features including: SUMLEV, REGION, DIVISION, STATE, NAME, SEX, ORIGIN, RACE, AGE.
@@ -123,7 +124,7 @@ curl -X POST http://127.0.0.1:5000/predict \
 ### 8. Stopping the Application
 To shop the application - Ctrl + C
 
-## Running Tests - In progress
+## Running Tests - in progress
 Pytests 
 
 ## Deploying to Heroku
