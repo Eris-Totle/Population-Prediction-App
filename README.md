@@ -125,7 +125,30 @@ curl -X POST http://127.0.0.1:5000/predict \
 To shop the application - Ctrl + C
 
 ## Running Tests - in progress
-Pytests 
+Pytests are used to test the functionality of the application. First, dependencies must be installed prior to running the tests:
+
+```bash
+pip install -r requirements.txt
+```
+
+Then export the PYTHONPATH, so Python can find the app module:
+
+MAC OS:
+```bash
+export PYTHONPATH=.
+```
+Windows
+
+```bash
+$env:PYTHONPATH="."
+pytest
+```
+Finally, run the tests with: 
+
+```bash
+pytest
+```
+
 
 ## Deploying to Heroku
 
